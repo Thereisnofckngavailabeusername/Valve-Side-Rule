@@ -194,6 +194,7 @@
         // Mouse drag functionality for image
         container.addEventListener('mousedown', (e) => {
             if (isDraggingRectangle) return;
+            e.preventDefault();
             isMouseDown = true;
             startX = e.clientX;
             draggableImage.style.cursor = 'grabbing';
@@ -201,6 +202,7 @@
 
         // Touch drag functionality for rectangle
         draggableRectangle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
             isDraggingRectangle = true;
             startX = e.touches[0].clientX;
             e.stopPropagation();
@@ -209,6 +211,7 @@
         // Touch drag functionality for image
         container.addEventListener('touchstart', (e) => {
             if (isDraggingRectangle) return;
+            e.preventDefault();
             isTouchDown = true;
             startX = e.touches[0].clientX;
         });
@@ -224,6 +227,7 @@
         });
 
         document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
             if (isDraggingRectangle) {
                 const deltaX = e.touches[0].clientX - startX;
                 draggableRectangle.style.transform = 'translateX(' + (rectTranslate + deltaX) + 'px)';
@@ -255,17 +259,26 @@
             }
         });
 
-        // Handle orientation changes
+        // Handle orientation/resize: reset transforms and keep viewport at top
+        function resetTransformsOnRotate() {
+            currentTranslate = 0;
+            rectTranslate = 0;
+            draggableImage.style.transform = 'translateX(0px)';
+            draggableRectangle.style.transform = 'translateX(0px)';
+            setTimeout(() => window.scrollTo(0, 0), 50);
+        }
+
         window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                window.scrollTo(0, 0);
-            }, 100);
+            resetTransformsOnRotate();
         });
-        
-        // Alternative method for browsers that support it
+
+        // Fallback for browsers that don't fire orientationchange
         window.addEventListener('resize', () => {
-            window.scrollTo(0, 0);
+            resetTransformsOnRotate();
         });
+
+        // Arrow key functionality
+        document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') {
                 rectTranslate -= 10;
                 draggableRectangle.style.transform = 'translateX(' + rectTranslate + 'px)';
