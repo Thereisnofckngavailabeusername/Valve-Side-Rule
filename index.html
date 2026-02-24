@@ -143,12 +143,25 @@
                 object-fit: contain;
             }
         }
+        .force-landscape .container {
+            width: 100vh !important;
+            height: 100vw !important;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
         .force-landscape .image-stack {
             /* Treat portrait as landscape by using viewport height as width */
             width: 100vh !important;
-            height: calc(100vw - 40px) !important;
+            height: 100vw !important;
             max-width: none !important;
+            margin: 0 !important;
         }
+
         .force-landscape #sideA,
         .force-landscape #draggableImage {
             width: auto !important;
@@ -207,13 +220,14 @@
         turnBtn.addEventListener('click', () => {
             isSideB = !isSideB;
             if (isSideB) {
+                sideAImg.onload = adjustLayout;
                 sideAImg.src = 'SideB.png';
                 draggableImage.src = 'slideBrule.jpg';
             } else {
+                sideAImg.onload = adjustLayout;
                 sideAImg.src = 'SideA.png';
                 draggableImage.src = 'sideArule.jpg';
             }
-            requestAnimationFrame(adjustLayout);
         });
 
         // Mouse drag functionality for rectangle
@@ -319,6 +333,8 @@
         window.addEventListener('load', () => {
             requestAnimationFrame(adjustLayout);
         });
+        // Recalculate when image loads (important on mobile)
+        sideAImg.addEventListener('load', adjustLayout);
         window.addEventListener('resize', () => {
             requestAnimationFrame(adjustLayout);
         });
