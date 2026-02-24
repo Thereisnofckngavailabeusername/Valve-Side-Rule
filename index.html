@@ -104,11 +104,12 @@
             content: '';
             position: absolute;
             top: 0;
-            bottom: 0;
             left: 50%;
             width: 2px;
+            height: 100%;
             background-color: red;
             transform: translateX(-50%);
+            pointer-events: none;
         }
         
         #draggableRectangle:active {
@@ -332,14 +333,37 @@
             draggableImage.style.transform = 'translateX(0px)';
             draggableRectangle.style.transform = 'translateX(0px)';
 
-            // Set rectangle height to match the ACTUAL displayed height of the top image
-            // Use getBoundingClientRect to get the real rendered size
+            // Set rectangle height and position to match the ACTUAL displayed image
+            // With object-fit: contain, calculate visual size and offset
             requestAnimationFrame(() => {
-                const imgRect = sideAImg.getBoundingClientRect();
-                if (imgRect && imgRect.height > 0) {
-                    // Clamp rectangle height to image's actual rendered height
-                    const rectHeight = Math.min(imgRect.height, container.clientHeight);
-                    draggableRectangle.style.height = rectHeight + 'px';
+                const containerRect = container.getBoundingClientRect();
+                const imgNaturalWidth = sideAImg.naturalWidth;
+                const imgNaturalHeight = sideAImg.naturalHeight;
+                
+                if (imgNaturalWidth > 0 && imgNaturalHeight > 0) {
+                    const aspectRatio = imgNaturalWidth / imgNaturalHeight;
+                    const containerWidth = containerRect.width;
+                    const containerHeight = containerRect.height;
+                    
+                    let displayedHeight, displayedWidth, topOffset, leftOffset;
+                    
+                    if (containerWidth / containerHeight > aspectRatio) {
+                        // Image is taller (relatively), constrained by height
+                        displayedHeight = containerHeight;
+                        displayedWidth = containerHeight * aspectRatio;
+                        topOffset = 0;
+                        leftOffset = (containerWidth - displayedWidth) / 2;
+                    } else {
+                        // Image is wider (relatively), constrained by width
+                        displayedWidth = containerWidth;
+                        displayedHeight = containerWidth / aspectRatio;
+                        topOffset = (containerHeight - displayedHeight) / 2;
+                        leftOffset = 0;
+                    }
+                    
+                    draggableRectangle.style.height = displayedHeight + 'px';
+                    draggableRectangle.style.top = topOffset + 'px';
+                    draggableRectangle.style.left = leftOffset + 'px';
                 }
             });
         }
