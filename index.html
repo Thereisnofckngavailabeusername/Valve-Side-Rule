@@ -143,6 +143,18 @@
                 object-fit: contain;
             }
         }
+        .force-landscape .image-stack {
+            /* Treat portrait as landscape by using viewport height as width */
+            width: 100vh !important;
+            height: calc(100vw - 40px) !important;
+            max-width: none !important;
+        }
+        .force-landscape #sideA,
+        .force-landscape #draggableImage {
+            width: auto !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
@@ -162,14 +174,34 @@
         const sideAImg = document.getElementById('sideA');
         const turnBtn = document.getElementById('turnBtn');
         const container = document.querySelector('.image-stack');
-        let startX = 0;
-        let startY = 0;
+        let startPos = 0;
         let isMouseDown = false;
         let isTouchDown = false;
         let isDraggingRectangle = false;
         let currentTranslate = 0;
         let rectTranslate = 0;
         let isSideB = false;
+
+        // Utility: get pointer coordinate mapped to visual horizontal
+        function getPointerPos(e) {
+            const isTouch = e.touches && e.touches[0];
+            const forceLandscape = document.body.classList.contains('force-landscape');
+            if (isTouch) {
+                return forceLandscape ? e.touches[0].clientY : e.touches[0].clientX;
+            } else {
+                return forceLandscape ? e.clientY : e.clientX;
+            }
+        }
+
+        function getChangedPointerPos(e) {
+            const isTouch = e.changedTouches && e.changedTouches[0];
+            const forceLandscape = document.body.classList.contains('force-landscape');
+            if (isTouch) {
+                return forceLandscape ? e.changedTouches[0].clientY : e.changedTouches[0].clientX;
+            } else {
+                return forceLandscape ? e.clientY : e.clientX;
+            }
+        }
 
         // TURN button functionality
         turnBtn.addEventListener('click', () => {
@@ -181,14 +213,16 @@
                 sideAImg.src = 'SideA.png';
                 draggableImage.src = 'sideArule.jpg';
             }
+            requestAnimationFrame(adjustLayout);
         });
 
         // Mouse drag functionality for rectangle
         draggableRectangle.addEventListener('mousedown', (e) => {
             isDraggingRectangle = true;
-            startX = e.clientX;
+            startPos = getPointerPos(e);
             draggableRectangle.style.cursor = 'grabbing';
             e.stopPropagation();
+            e.preventDefault();
         });
 
         // Mouse drag functionality for image
@@ -196,7 +230,7 @@
             if (isDraggingRectangle) return;
             e.preventDefault();
             isMouseDown = true;
-            startX = e.clientX;
+            startPos = getPointerPos(e);
             draggableImage.style.cursor = 'grabbing';
         });
 
@@ -204,46 +238,46 @@
         draggableRectangle.addEventListener('touchstart', (e) => {
             e.preventDefault();
             isDraggingRectangle = true;
-            startX = e.touches[0].clientX;
+            startPos = getPointerPos(e);
             e.stopPropagation();
-        });
+        }, { passive: false });
 
         // Touch drag functionality for image
         container.addEventListener('touchstart', (e) => {
             if (isDraggingRectangle) return;
             e.preventDefault();
             isTouchDown = true;
-            startX = e.touches[0].clientX;
-        });
+            startPos = getPointerPos(e);
+        }, { passive: false });
 
         document.addEventListener('mousemove', (e) => {
             if (isDraggingRectangle) {
-                const deltaX = e.clientX - startX;
-                draggableRectangle.style.transform = 'translateX(' + (rectTranslate + deltaX) + 'px)';
+                const delta = getPointerPos(e) - startPos;
+                draggableRectangle.style.transform = 'translateX(' + (rectTranslate + delta) + 'px)';
             } else if (isMouseDown) {
-                const deltaX = e.clientX - startX;
-                draggableImage.style.transform = 'translateX(' + (currentTranslate + deltaX) + 'px)';
+                const delta = getPointerPos(e) - startPos;
+                draggableImage.style.transform = 'translateX(' + (currentTranslate + delta) + 'px)';
             }
         });
 
         document.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (isDraggingRectangle) {
-                const deltaX = e.touches[0].clientX - startX;
-                draggableRectangle.style.transform = 'translateX(' + (rectTranslate + deltaX) + 'px)';
+                const delta = getPointerPos(e) - startPos;
+                draggableRectangle.style.transform = 'translateX(' + (rectTranslate + delta) + 'px)';
             } else if (isTouchDown) {
-                const deltaX = e.touches[0].clientX - startX;
-                draggableImage.style.transform = 'translateX(' + (currentTranslate + deltaX) + 'px)';
+                const delta = getPointerPos(e) - startPos;
+                draggableImage.style.transform = 'translateX(' + (currentTranslate + delta) + 'px)';
             }
         }, { passive: false });
 
         document.addEventListener('mouseup', (e) => {
             if (isDraggingRectangle) {
-                rectTranslate += e.clientX - startX;
+                rectTranslate += getChangedPointerPos(e) - startPos;
                 isDraggingRectangle = false;
                 draggableRectangle.style.cursor = 'grab';
             } else if (isMouseDown) {
-                currentTranslate += e.clientX - startX;
+                currentTranslate += getChangedPointerPos(e) - startPos;
                 isMouseDown = false;
                 draggableImage.style.cursor = 'grab';
             }
@@ -251,30 +285,45 @@
 
         document.addEventListener('touchend', (e) => {
             if (isDraggingRectangle) {
-                rectTranslate += e.changedTouches[0].clientX - startX;
+                rectTranslate += getChangedPointerPos(e) - startPos;
                 isDraggingRectangle = false;
             } else if (isTouchDown) {
-                currentTranslate += e.changedTouches[0].clientX - startX;
+                currentTranslate += getChangedPointerPos(e) - startPos;
                 isTouchDown = false;
             }
         });
 
-        // Handle orientation/resize: reset transforms and keep viewport at top
-        function resetTransformsOnRotate() {
+        // Adjust layout and rectangle height; set force-landscape if in portrait
+        function adjustLayout() {
+            // Force landscape-like layout if device is portrait
+            if (window.innerHeight > window.innerWidth) {
+                document.body.classList.add('force-landscape');
+            } else {
+                document.body.classList.remove('force-landscape');
+            }
+
+            // Reset transforms and translations
             currentTranslate = 0;
             rectTranslate = 0;
             draggableImage.style.transform = 'translateX(0px)';
             draggableRectangle.style.transform = 'translateX(0px)';
-            setTimeout(() => window.scrollTo(0, 0), 50);
+
+            // Set rectangle height to match the top image
+            const imgRect = sideAImg.getBoundingClientRect();
+            if (imgRect && imgRect.height) {
+                draggableRectangle.style.height = imgRect.height + 'px';
+            }
         }
 
-        window.addEventListener('orientationchange', () => {
-            resetTransformsOnRotate();
+        // Run initially and on changes
+        window.addEventListener('load', () => {
+            requestAnimationFrame(adjustLayout);
         });
-
-        // Fallback for browsers that don't fire orientationchange
         window.addEventListener('resize', () => {
-            resetTransformsOnRotate();
+            requestAnimationFrame(adjustLayout);
+        });
+        window.addEventListener('orientationchange', () => {
+            requestAnimationFrame(adjustLayout);
         });
 
         // Arrow key functionality
