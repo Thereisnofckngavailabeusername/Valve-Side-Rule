@@ -30,9 +30,11 @@
         
         .image-stack {
             position: relative;
-            width: 400px;
+            width: 100%;
+            max-width: 400px;
             margin: 0 auto;
             display: inline-block;
+            touch-action: none;
         }
         
         #sideA {
@@ -73,6 +75,7 @@
             cursor: grab;
             user-select: none;
             z-index: 3;
+            touch-action: none;
         }
         
         #draggableRectangle::after {
@@ -90,11 +93,32 @@
             cursor: grabbing;
         }
         
-        .info {
-            margin-top: 20px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
+        @media (max-width: 768px) {
+            body {
+                min-height: 100vh;
+            }
+            .container {
+                width: 100%;
+                height: 100vh;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            #turnBtn {
+                margin-bottom: 10px;
+            }
+            .image-stack {
+                width: 100%;
+                height: calc(100vh - 60px);
+                max-width: none;
+            }
+            #sideA {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 0;
+            }
         }
     </style>
 </head>
@@ -116,7 +140,9 @@
         const turnBtn = document.getElementById('turnBtn');
         const container = document.querySelector('.image-stack');
         let startX = 0;
+        let startY = 0;
         let isMouseDown = false;
+        let isTouchDown = false;
         let isDraggingRectangle = false;
         let currentTranslate = 0;
         let rectTranslate = 0;
@@ -150,6 +176,20 @@
             draggableImage.style.cursor = 'grabbing';
         });
 
+        // Touch drag functionality for rectangle
+        draggableRectangle.addEventListener('touchstart', (e) => {
+            isDraggingRectangle = true;
+            startX = e.touches[0].clientX;
+            e.stopPropagation();
+        });
+
+        // Touch drag functionality for image
+        container.addEventListener('touchstart', (e) => {
+            if (isDraggingRectangle) return;
+            isTouchDown = true;
+            startX = e.touches[0].clientX;
+        });
+
         document.addEventListener('mousemove', (e) => {
             if (isDraggingRectangle) {
                 const deltaX = e.clientX - startX;
@@ -160,6 +200,16 @@
             }
         });
 
+        document.addEventListener('touchmove', (e) => {
+            if (isDraggingRectangle) {
+                const deltaX = e.touches[0].clientX - startX;
+                draggableRectangle.style.transform = 'translateX(' + (rectTranslate + deltaX) + 'px)';
+            } else if (isTouchDown) {
+                const deltaX = e.touches[0].clientX - startX;
+                draggableImage.style.transform = 'translateX(' + (currentTranslate + deltaX) + 'px)';
+            }
+        }, { passive: false });
+
         document.addEventListener('mouseup', (e) => {
             if (isDraggingRectangle) {
                 rectTranslate += e.clientX - startX;
@@ -169,6 +219,16 @@
                 currentTranslate += e.clientX - startX;
                 isMouseDown = false;
                 draggableImage.style.cursor = 'grab';
+            }
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (isDraggingRectangle) {
+                rectTranslate += e.changedTouches[0].clientX - startX;
+                isDraggingRectangle = false;
+            } else if (isTouchDown) {
+                currentTranslate += e.changedTouches[0].clientX - startX;
+                isTouchDown = false;
             }
         });
 
