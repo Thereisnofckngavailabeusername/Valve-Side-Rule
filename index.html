@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruler - Draggable Images</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-stack {
+            position: relative;
+            width: 400px;
+            margin: 0 auto;
+            display: inline-block;
+        }
+        
+        #sideA {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            position: relative;
+            z-index: 2;
+            display: block;
+            pointer-events: none;
+        }
+        
+        #draggableImage {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        #draggableImage:active {
+            cursor: grabbing;
+        }
+        
+        #draggableRectangle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.1);
+            cursor: grab;
+            user-select: none;
+            z-index: 3;
+        }
+        
+        #draggableRectangle::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background-color: red;
+            transform: translateX(-50%);
+        }
+        
+        #draggableRectangle:active {
+            cursor: grabbing;
+        }
+        
+        .info {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="turnBtn" style="margin-bottom: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer;">TURN</button>
+        <div class="image-stack">
+            <img id="sideA" src="SideA.png" alt="Side A">
+            <img id="draggableImage" src="sideArule.jpg" alt="Side A Rule">
+            <div id="draggableRectangle"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const draggableImage = document.getElementById('draggableImage');
+        const draggableRectangle = document.getElementById('draggableRectangle');
+        const sideAImg = document.getElementById('sideA');
+        const turnBtn = document.getElementById('turnBtn');
+        const container = document.querySelector('.image-stack');
+        let startX = 0;
+        let isMouseDown = false;
+        let isDraggingRectangle = false;
+        let currentTranslate = 0;
+        let rectTranslate = 0;
+        let isSideB = false;
+
+        // TURN button functionality
+        turnBtn.addEventListener('click', () => {
+            isSideB = !isSideB;
+            if (isSideB) {
+                sideAImg.src = 'SideB.png';
+                draggableImage.src = 'slideBrule.jpg';
+            } else {
+                sideAImg.src = 'SideA.png';
+                draggableImage.src = 'sideArule.jpg';
+            }
+        });
+
+        // Mouse drag functionality for rectangle
+        draggableRectangle.addEventListener('mousedown', (e) => {
+            isDraggingRectangle = true;
+            startX = e.clientX;
+            draggableRectangle.style.cursor = 'grabbing';
+            e.stopPropagation();
+        });
+
+        // Mouse drag functionality for image
+        container.addEventListener('mousedown', (e) => {
+            if (isDraggingRectangle) return;
+            isMouseDown = true;
+            startX = e.clientX;
+            draggableImage.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingRectangle) {
+                const deltaX = e.clientX - startX;
+                draggableRectangle.style.transform = 'translateX(' + (rectTranslate + deltaX) + 'px)';
+            } else if (isMouseDown) {
+                const deltaX = e.clientX - startX;
+                draggableImage.style.transform = 'translateX(' + (currentTranslate + deltaX) + 'px)';
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (isDraggingRectangle) {
+                rectTranslate += e.clientX - startX;
+                isDraggingRectangle = false;
+                draggableRectangle.style.cursor = 'grab';
+            } else if (isMouseDown) {
+                currentTranslate += e.clientX - startX;
+                isMouseDown = false;
+                draggableImage.style.cursor = 'grab';
+            }
+        });
+
+        // Arrow key functionality
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                rectTranslate -= 10;
+                draggableRectangle.style.transform = 'translateX(' + rectTranslate + 'px)';
+                currentTranslate -= 10;
+                draggableImage.style.transform = 'translateX(' + currentTranslate + 'px)';
+            } else if (e.key === 'ArrowRight') {
+                rectTranslate += 10;
+                draggableRectangle.style.transform = 'translateX(' + rectTranslate + 'px)';
+                currentTranslate += 10;
+                draggableImage.style.transform = 'translateX(' + currentTranslate + 'px)';
+            }
+        });
+    </script>
+</body>
+</html>
