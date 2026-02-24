@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ruler - Draggable Images</title>
     <style>
         * {
@@ -96,28 +96,37 @@
         @media (max-width: 768px) {
             body {
                 min-height: 100vh;
+                overflow: hidden;
             }
             .container {
-                width: 100%;
+                width: 100vw;
                 height: 100vh;
-                padding: 10px;
+                padding: 5px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                justify-content: center;
             }
             #turnBtn {
                 margin-bottom: 10px;
+                padding: 8px 16px;
+                font-size: 14px;
             }
             .image-stack {
-                width: 100%;
-                height: calc(100vh - 60px);
-                max-width: none;
+                width: 90vh;
+                height: auto;
+                max-width: 100vw;
+                max-height: calc(100vh - 60px);
             }
             #sideA {
                 width: 100%;
-                height: 100%;
-                object-fit: cover;
+                height: auto;
                 border-radius: 0;
+                display: block;
+            }
+            #draggableImage {
+                width: 100%;
+                height: auto;
             }
         }
     </style>
