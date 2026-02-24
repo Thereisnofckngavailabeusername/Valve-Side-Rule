@@ -99,6 +99,7 @@
             touch-action: none;
         }
         
+
         #draggableRectangle::after {
             content: '';
             position: absolute;
@@ -217,25 +218,15 @@
         let rectTranslate = 0;
         let isSideB = false;
 
-        // Utility: get pointer coordinate mapped to visual horizontal
+        // Utility: get pointer X coordinate (horizontal drag)
         function getPointerPos(e) {
             const isTouch = e.touches && e.touches[0];
-            const forceLandscape = document.body.classList.contains('force-landscape');
-            if (isTouch) {
-                return forceLandscape ? e.touches[0].clientY : e.touches[0].clientX;
-            } else {
-                return forceLandscape ? e.clientY : e.clientX;
-            }
+            return isTouch ? e.touches[0].clientX : e.clientX;
         }
 
         function getChangedPointerPos(e) {
             const isTouch = e.changedTouches && e.changedTouches[0];
-            const forceLandscape = document.body.classList.contains('force-landscape');
-            if (isTouch) {
-                return forceLandscape ? e.changedTouches[0].clientY : e.changedTouches[0].clientX;
-            } else {
-                return forceLandscape ? e.clientY : e.clientX;
-            }
+            return isTouch ? e.changedTouches[0].clientX : e.clientX;
         }
 
         // TURN button functionality
@@ -344,11 +335,14 @@
             draggableImage.style.transform = 'translateX(0px)';
             draggableRectangle.style.transform = 'translateX(0px)';
 
-            // Set rectangle height to match the top image
-            const imgRect = sideAImg.getBoundingClientRect();
-            if (imgRect && imgRect.height) {
-                draggableRectangle.style.height = imgRect.height + 'px';
-            }
+            // Set rectangle height to match the ACTUAL displayed height of the top image
+            // Use getBoundingClientRect to get the real rendered size
+            requestAnimationFrame(() => {
+                const imgRect = sideAImg.getBoundingClientRect();
+                if (imgRect && imgRect.height > 0) {
+                    draggableRectangle.style.height = imgRect.height + 'px';
+                }
+            });
         }
 
         // Run initially and on changes
