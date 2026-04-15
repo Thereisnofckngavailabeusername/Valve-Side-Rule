@@ -1,6 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    /*
+    Cequi suit n'a aucun rapport avec le projet, j'ai just epas de clef USB : 
+
+Projet expérimentale et numérique
+Liste 1 – Corps humain et santé – 1
+
+Réalisé sans assistance d’intelligence artificielle. (Jusqu’à présent du moins)
+
+
+Chaque année en France, environ 150.000 personnes meurent d’une maladie cardiovasculaire. Et si la tranche d’âge la plus touchée sont les 70ans+  les sportifs semblent échapper à cette règle. L’entrainement a des effets notables sur eux, leur fréquence cardiaque et leur santé cardiovasculaire.
+
+Ces élements en main on peut alors se demander comment l’activité physique influence-t-elle la fréquence cardiaque et la santé cardiovasculaire ?
+
+On peut imaginer que l’entrainement réguliers des sportifs à un effet direct sur leur cœur et ce qui en découle. Ainsi l’activité physique aurait un impact sur les capacités cardiaques et donc en opposition avec l’absence d’activité qui aurait également des répercussions.
+
+Pour répondre efficacement a la problématique soulevée l’on pourra comparer la santé cardiaque d’un pratiquant sportif régulier a celle d’une personne qui n’en fait pratiquement jamais. On pourra également s’intéresser à l’évolution de la fréquence cardiaque d’un nouveau pratiquant.
+
+La c’est le moment ou j’ai la flemme de continuer donc je vais juste balancer mes liens : 
+
+https://www.ottawaheart.ca/fr/patients-et-visiteurs/centres-et-programmes/centre-de-prevention-et-mieux-etre/sante-cardiaque-en-bref/facteurs-de-risque/pwc/activite-physique
+https://www.who.int/fr/news-room/fact-sheets/detail/physical-activity
+https://www.who.int/fr/health-topics/cardiovascular-diseases
+https://www.ameli.fr/assure/sante/assurance-maladie/comment-reduire-mon-risque-cardiovasculaire/mieux-prevenir-le-risque-cardiovasculaire/les-conseils-pour-reduire-mon-risque-cardiovasculaire-au-quo/activite-physique
+https://www.data.gouv.fr/pages/donnees_sante
+https://www.cdc.gov/physical-activity/php/data/index.html
+
+Note : revoir les hypothèse ; formulation a améliorer
+
+
+
+        */
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ruler - Draggable Images</title>
@@ -187,7 +218,7 @@
         .force-landscape #draggableImage {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: contain; 
         }
     </style>
 </head>
@@ -199,6 +230,9 @@
             <img id="draggableImage" src="sideArule.jpg" alt="Side A Rule">
             <div id="draggableRectangle"></div>
         </div>
+        
+
+
 
     </div>
 
@@ -216,7 +250,7 @@
         let rectTranslate = 0;
         let isSideB = false;
 
-        // Utility: get pointer X coordinate (horizontal drag)
+        
         function getPointerPos(e) {
             const isTouch = e.touches && e.touches[0];
             return isTouch ? e.touches[0].clientX : e.clientX;
@@ -227,7 +261,7 @@
             return isTouch ? e.changedTouches[0].clientX : e.clientX;
         }
 
-        // TURN button functionality
+       
         turnBtn.addEventListener('click', () => {
             isSideB = !isSideB;
             if (isSideB) {
@@ -241,7 +275,7 @@
             }
         });
 
-        // Mouse drag functionality for rectangle
+       
         draggableRectangle.addEventListener('mousedown', (e) => {
             isDraggingRectangle = true;
             startPos = getPointerPos(e);
@@ -250,7 +284,7 @@
             e.preventDefault();
         });
 
-        // Mouse drag functionality for image
+        
         container.addEventListener('mousedown', (e) => {
             if (isDraggingRectangle) return;
             e.preventDefault();
@@ -259,7 +293,7 @@
             draggableImage.style.cursor = 'grabbing';
         });
 
-        // Touch drag functionality for rectangle
+      
         draggableRectangle.addEventListener('touchstart', (e) => {
             e.preventDefault();
             isDraggingRectangle = true;
@@ -267,7 +301,7 @@
             e.stopPropagation();
         }, { passive: false });
 
-        // Touch drag functionality for image
+        
         container.addEventListener('touchstart', (e) => {
             if (isDraggingRectangle) return;
             e.preventDefault();
@@ -318,23 +352,22 @@
             }
         });
 
-        // Adjust layout and rectangle height; set force-landscape if in portrait
+        
         function adjustLayout() {
-            // Force landscape-like layout if device is portrait
+           
             if (window.innerHeight > window.innerWidth) {
                 document.body.classList.add('force-landscape');
             } else {
                 document.body.classList.remove('force-landscape');
             }
 
-            // Reset transforms and translations
+         
             currentTranslate = 0;
             rectTranslate = 0;
             draggableImage.style.transform = 'translateX(0px)';
             draggableRectangle.style.transform = 'translateX(0px)';
 
-            // Set rectangle height and position to match the ACTUAL displayed image
-            // With object-fit: contain, calculate visual size and offset
+
             requestAnimationFrame(() => {
                 const containerRect = container.getBoundingClientRect();
                 const imgNaturalWidth = sideAImg.naturalWidth;
@@ -348,13 +381,13 @@
                     let displayedHeight, displayedWidth, topOffset, leftOffset;
                     
                     if (containerWidth / containerHeight > aspectRatio) {
-                        // Image is taller (relatively), constrained by height
+
                         displayedHeight = containerHeight;
                         displayedWidth = containerHeight * aspectRatio;
                         topOffset = 0;
                         leftOffset = (containerWidth - displayedWidth) / 2;
                     } else {
-                        // Image is wider (relatively), constrained by width
+
                         displayedWidth = containerWidth;
                         displayedHeight = containerWidth / aspectRatio;
                         topOffset = (containerHeight - displayedHeight) / 2;
@@ -368,11 +401,11 @@
             });
         }
 
-        // Run initially and on changes
+
         window.addEventListener('load', () => {
             requestAnimationFrame(adjustLayout);
         });
-        // Recalculate when image loads (important on mobile)
+
         sideAImg.addEventListener('load', adjustLayout);
         window.addEventListener('resize', () => {
             requestAnimationFrame(adjustLayout);
@@ -381,7 +414,7 @@
             requestAnimationFrame(adjustLayout);
         });
 
-        // Arrow key functionality
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') {
                 rectTranslate -= 10;
